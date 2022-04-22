@@ -1,5 +1,3 @@
-from re import S
-from this import d
 import streamlit as st
 import numpy as np
 import plotly.express as px
@@ -144,9 +142,10 @@ def mean_field1():
     """
     def model(data):
         # Ground Truth
-        for i in range(len(data)):
-            ber = pyro.sample(f"obs_{i}",dist.Bernoulli(0.5), obs=data[i])
-                    
+        for i in pyro.plate("data_loop",len(data)):
+
+            ber = pyro.sample(dist.Bernoulli(0.5), obs=data[i])
+
 
 def mean_field2():
     """
