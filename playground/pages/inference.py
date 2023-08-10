@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 from scipy.stats import norm
@@ -72,13 +73,19 @@ def mcmc_section():
             st.write(len(st.session_state["MCMC_Samples"]))
             st.write(s_start, s_end)
             mcmc_samples = st.session_state["MCMC_Samples"][s_start:s_end-1]
-            fig = ff.create_distplot([mcmc_samples], ["Posterior Distribution"],
+            fig = ff.create_distplot([st.session_state['True_Samples'], mcmc_samples], ['Ground Truth',"Posterior Distribution"],
                                      bin_size=0.4, show_rug=False)
             st.plotly_chart(fig)
 
-
-    
-    
+def mcmc_trace():
+    st.markdown("### Trace")
+    if st.session_state["MCMC_Samples"] is not None:
+        samples = st.session_state["MCMC_Samples"]
+        df = pd.DataFrame([samples, range(len(samples))]).T
+        df.columns = ['samples','n_samples']
+        st.write(df)
+        fig = px.line(df, x="n_samples", y="samples", title='MCMC Sample Trace')
+        st.plotly_chart(fig)
 
 mcmc_intro_txt = """
     This section shows MCMC sampling in action and how it can allows us to 
@@ -125,8 +132,6 @@ def mcmc(start_pos: float, samples: int = 5000,) -> List[float]:
         else:
             samples.append(start_pos)
     return samples
-    
-        
 
 def pg3():
     st.header("Bayesian Inference")
@@ -134,6 +139,7 @@ def pg3():
     generate_dist()
     st.subheader("Variational Inference")
     mcmc_section()
+    # mcmc_trace()
 
 def mean_field1():
     """
@@ -146,10 +152,10 @@ def mean_field1():
 
             ber = pyro.sample(dist.Bernoulli(0.5), obs=data[i])
 
-
 def mean_field2():
     """
     More advanced model to use 2 gaussians and a beta distribution to 
     approximate the posterior
     """
     pass
+
